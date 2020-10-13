@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>This is created for database testing</h1>
+    <form action="/addTask" method="POST">
+        <input type="text" name="title" id="title" placeholder="title">
+        <input type="text" name="time" id="time" placeholder="time">
+        <input type="text" name="marks" id="marks" placeholder="marks">
+        <button type="submit">submit</button>
+    </form>
+    <div id="tasks"></div>
+    <div id="task-update"></div>
+    <script>
+        function displayTasks() {
+            const taskId = document.getElementById('tasks')
+            fetch('/tasks')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(task => {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong> title : ${task.title}</strong> time : ${task.time} marks : ${task.marks} <button onClick=(taskUpdateSection('${task._id}'))>Update</button><button onClick=(taskDelete(event,'${task._id}'))>Delete</button>`
+                        taskId.appendChild(p)
+                    })
+                })
+        }
+        displayTasks()
+        function taskUpdateSection(id) {
+            fetch(`/update/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const updateSection = document.getElementById('task-update')
+                    updateSection.innerHTML = `<h1>${data.title}</h1> 
+                    Time : <input type="text" value=${data.time} id="updateTime">
+                    <br>
+                    marks : <input type="text" value=${data.marks} id="updateMarks">
+                    <br>
+                    <button onClick=(update('${data._id}'))>Submit </button> `
+            })
+            }
+        
+        function update(id) {
+            
+            const time = document.getElementById('updateTime').value
+            const marks = document.getElementById('updateMarks').value
+            const updateTask= {id, time, marks}
+            fetch(`/updateTask/${id}`,{
+                method: 'PATCH',
+                body : JSON.stringify(updateTask),
+                headers : {"Content-Type": "application/json"}
+            })
+                .then(response => response.json())
+                .then(data =>{
+                    console.log(data)
+                })
+        }
+
+        function taskDelete(event, id) {
+            console.log(event.target);
+                        fetch(`/taskDelete/${id}`, {
+                            method: 'DELETE',
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data) {
+                                    event.target.parentNode.style.display = 'none';
+                                }
+                            })
+
+                    }
+    </script>
+</body>
+
+</html>
